@@ -10,6 +10,7 @@ enum reg {
     T = 5,
     F = 6,
     PC = 8,
+    // bit 6: 1 LT, 0 GT; bit 7: 1 EQ, 0 NE
     SW = 9
 };
 
@@ -25,6 +26,11 @@ class registers {
 
     // int operator[](reg reg) const;
     int& operator[](reg reg);
+    int& operator[](int reg);
+
+    int SW_set_CC(int comp1, int comp2);
+    bool SW_get_LT();
+    bool SW_get_EQ();
 
    private:
     int regs[10];
