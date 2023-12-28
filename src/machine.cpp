@@ -1,22 +1,23 @@
 #include "machine.hpp"
 
 #include <cmath>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
 #include "instruction-handlers.hpp"
 #include "instructions.hpp"
 
-machine::machine(memory* mem, program_info& prog) : mem(mem) {
-    // regs.setReg(PC, prog.entryPoint);
+machine::machine(memory* mem, program_info& prog) : mem(mem), _ioAvailable(true) {
     regs[PC] = prog.entryPoint;  // TODO: possible failure point
     devices[0] = new std::fstream("/dev/stdin", std::ios::in);
     devices[1] = new std::fstream("/dev/stdout", std::ios::out);
     devices[2] = new std::fstream("/dev/stderr", std::ios::out);
+    status = machine_status::ready;
 }
 
 machine::~machine() {
-    stop();
+    halt();
     delete mem;
     for (unsigned long i = 0; i < sizeof(devices); i++) {
         delete devices[i];
@@ -60,10 +61,6 @@ instruction* machine::fetch() {
                 newByte = mem->getByte(regs[PC]++);
                 instr->op1 = (instr->op1 << 8) | newByte;
             }
-            /*if (instr.isIndexed()) {
-                newByte = mem->getByte(regs[PC]++);
-                instr.op2 = newByte;
-            }*/
             break;
         default:
             throw std::runtime_error("Invalid instruction format");
@@ -72,10 +69,52 @@ instruction* machine::fetch() {
 }
 
 void machine::run() {
+    if (status != machine_status::ready) {
+        throw std::runtime_error("Machine not ready!");
+    }
+
+    if (status == machine_status::halted) {
+        throw std::runtime_error("Machine halted!");
+    }
+
+    if (status == machine_status::running) {
+        throw std::runtime_error("Machine already running!");
+    }
+
+    std::cout << "Machine started" << std::endl;
+    status = machine_status::running;
+    while (status == machine_status::running) {
+        instruction* instr = fetch();
+#ifdef DEBUG
+        std::cout << "Fetched instruction: " << instr->toString() << std::endl;
+#endif
+        exec_instruction(*this, *instr);
+        delete instr;
+    }
+
+    switch (status) {
+        case machine_status::halted:
+            std::cout << "Machine halted" << std::endl;
+            break;
+        case machine_status::paused:
+            std::cout << "Machine paused" << std::endl;
+            break;
+        default:
+            std::cout << "Unknown status" << std::endl;
+            break;
+    }
 }
 
-void machine::stop() {
-    running = false;
+void machine::halt() {
+    status = machine_status::halted;
+}
+
+void machine::pause() {
+    if (status == machine_status::running) {
+        status = machine_status::paused;
+    } else {
+        throw std::runtime_error("Cannot pause machine when not running");
+    }
 }
 
 bool machine::ioAvailable() {

@@ -85,7 +85,7 @@ void j(machine& m, memory& mem, registers& regs, instruction& instr, int actual_
         offset = 4;
     }
     if (instr.op1 == regs[PC] - offset)
-        m.stop();
+        m.halt();
     regs[PC] = instr.op1;
 }
 

@@ -1,12 +1,13 @@
 
 # Compiler options
-CC = g++
+CC = g++ -DDEBUG -g
 CFLAGS = -c -Wall
 LINKER_LIBS = -lm -lpthread
 
 # Directories
 SRC_DIR = ./src
-BUILD_DIR = ./build
+BUILD_DIR = ./build/debug
+$(shell mkdir -p ./build/debug ./build/release)
 
 # Source files
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
@@ -22,12 +23,15 @@ $(OBJ_FILES): $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CC) $(CFLAGS) $(INC_DIRS) $< -o $@
 
 clean:
-	-rm -rf $(BUILD_DIR)/*.o
+	-rm -rf ./build/
 	-rm simulator
 
-debug:
+release: CC = g++
+release: all
+
+debugvars:
 	@echo 'INC_DIRS: ' $(INC_DIRS)
 	@echo 'SRC_FILES: ' $(SRC_FILES)
 	@echo 'OBJ_FILES: ' $(OBJ_FILES)
 
-.PHONY: clean debug
+.PHONY: clean debugvars

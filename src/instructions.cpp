@@ -1,6 +1,7 @@
 
 #include "instructions.hpp"
 
+#include <sstream>
 #include <stdexcept>
 
 #include "machine.hpp"
@@ -48,4 +49,28 @@ NI_state instruction::getNI() {
 
 BP_state instruction::getBP() {
     return static_cast<BP_state>((flags >> 1) & 0x3);
+}
+
+std::string instruction::toString() {
+    std::stringstream str;
+    switch (getFormat()) {
+        case format::F1:
+            str << "F1: ";
+            break;
+        case format::F2:
+            str << "F2: ";
+            break;
+        case format::SIC:
+            str << "SIC: ";
+            break;
+        case format::F3F4:
+            str << (isExtended() ? "F4: " : "F3: ");
+            break;
+    }
+    str << std::hex << opcode
+        << "|"
+        << std::hex << op1
+        << "|"
+        << std::hex << op2;
+    return str.str();
 }

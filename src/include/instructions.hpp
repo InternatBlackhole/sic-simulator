@@ -2,6 +2,7 @@
 #define TK_INSTRUCTIONS_HPP
 
 #include "registers.hpp"
+#include <string>
 
 enum class format {
     F1,
@@ -36,6 +37,8 @@ struct instruction {
     bool isIndexed();
     NI_state getNI();
     BP_state getBP();
+
+    std::string toString();
 };
 
 #endif  // TK_INSTRUCTIONS_HPP
