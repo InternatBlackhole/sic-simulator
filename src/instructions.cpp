@@ -70,7 +70,9 @@ std::string instruction::toString() {
     str << std::hex << opcode
         << "|"
         << std::hex << op1
-        << "|"
-        << std::hex << op2;
+        << "|";
+    if (op2 != -1) {
+        str << std::hex << op2;
+    }
     return str.str();
 }

@@ -8,7 +8,7 @@
 #include "instruction-handlers.hpp"
 #include "instructions.hpp"
 
-machine::machine(memory* mem, program_info& prog) : mem(mem), _ioAvailable(true) {
+machine::machine(memory& mem, program_info& prog) : mem(mem), _ioAvailable(true) {
     regs[PC] = prog.entryPoint;  // TODO: possible failure point
     devices[0] = new std::fstream("/dev/stdin", std::ios::in);
     devices[1] = new std::fstream("/dev/stdout", std::ios::out);
@@ -18,14 +18,16 @@ machine::machine(memory* mem, program_info& prog) : mem(mem), _ioAvailable(true)
 
 machine::~machine() {
     halt();
-    delete mem;
+    // mem is not in my control
+    // delete mem;
+
     for (unsigned long i = 0; i < sizeof(devices); i++) {
         delete devices[i];
     }
 }
 
 memory& machine::getMemory() {
-    return *mem;
+    return mem;
 }
 
 registers& machine::getRegisters() {
@@ -33,32 +35,32 @@ registers& machine::getRegisters() {
 }
 
 instruction* machine::fetch() {
-    int newByte = mem->getByte(regs[PC]++);
+    int newByte = mem.getByte(regs[PC]++);
     instruction* instr = new instruction(newByte);
     switch (instr->getFormat()) {
         case format::F1:
             // done
             break;
         case format::F2:
-            newByte = mem->getByte(regs[PC]++);
+            newByte = mem.getByte(regs[PC]++);
             instr->op1 = (newByte & 0xF0) >> 4;
             instr->op2 = newByte & 0xF;
             break;
         case format::SIC:
-            newByte = mem->getByte(regs[PC]++);
+            newByte = mem.getByte(regs[PC]++);
             instr->flags |= (newByte & 0x80) >> 4;
             instr->op1 = (newByte & 0x7F) << 8;
-            newByte = mem->getByte(regs[PC]++);
+            newByte = mem.getByte(regs[PC]++);
             instr->op1 |= newByte;
             break;
         case format::F3F4:
-            newByte = mem->getByte(regs[PC]++);
+            newByte = mem.getByte(regs[PC]++);
             instr->flags |= (newByte & 0xF0) >> 4;
             instr->op1 = (newByte & 0xF) << 8;
-            newByte = mem->getByte(regs[PC]++);
+            newByte = mem.getByte(regs[PC]++);
             instr->op1 |= newByte;
             if (instr->isExtended()) {
-                newByte = mem->getByte(regs[PC]++);
+                newByte = mem.getByte(regs[PC]++);
                 instr->op1 = (instr->op1 << 8) | newByte;
             }
             break;

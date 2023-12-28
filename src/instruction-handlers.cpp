@@ -80,11 +80,11 @@ void hio(machine& m, memory& mem, registers& regs, instruction& instr, int actua
 }
 
 void j(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    int offset = 3;
+    int offset = -3;
     if (instr.getFormat() == format::F3F4 && instr.isExtended()) {
-        offset = 4;
+        offset = -4;
     }
-    if (instr.op1 == regs[PC] - offset)
+    if (instr.op1 == offset)
         m.halt();
     regs[PC] = instr.op1;
 }
@@ -197,15 +197,15 @@ void ssk(machine& m, memory& mem, registers& regs, instruction& instr, int actua
 }
 
 void sta(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[A]);
+    mem.setWord(actual_addr, regs[A]);
 }
 
 void stb(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[B]);
+    mem.setWord(actual_addr, regs[B]);
 }
 
 void stch(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setByte(actual_param, regs[A]);
+    mem.setByte(actual_addr, regs[A]);
 }
 
 void stf(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
@@ -217,23 +217,23 @@ void sti(machine& m, memory& mem, registers& regs, instruction& instr, int actua
 }
 
 void stl(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[L]);
+    mem.setWord(actual_addr, regs[L]);
 }
 
 void sts(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[S]);
+    mem.setWord(actual_addr, regs[S]);
 }
 
 void stsw(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[SW]);
+    mem.setWord(actual_addr, regs[SW]);
 }
 
 void stt(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[T]);
+    mem.setWord(actual_addr, regs[T]);
 }
 
 void stx(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    mem.setWord(actual_param, regs[X]);
+    mem.setWord(actual_addr, regs[X]);
 }
 
 void sub(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
