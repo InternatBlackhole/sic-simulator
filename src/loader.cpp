@@ -56,10 +56,12 @@ void handleH(std::string line, memory& mem, program_info& prog) {
 
 void handleD(std::string line, memory& mem, program_info& prog) {
     // not implemented
+    throw std::runtime_error("D record not implemented");
 }
 
 void handleR(std::string line, memory& mem, program_info& prog) {
     // not implemented
+    throw std::runtime_error("R record not implemented");
 }
 
 void handleT(std::string line, memory& mem, program_info& prog) {
@@ -77,4 +79,5 @@ void handleE(std::string line, memory& mem, program_info& prog) {
 void handleM(std::string line, memory& mem, program_info& prog) {
     // not implemented
     // the ones that use just reloacation without imported symbols could be done
+    throw std::runtime_error("M record not implemented");
 }
