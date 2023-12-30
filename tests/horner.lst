@@ -1,0 +1,54 @@
+00000            horner  START   0    
+00000  050000            LDX     #0    . tracks coeff position and power
+00003  01206C            LDA     #koef    
+00006  0F207E            STA     next    
+00009  02207B    loop    LDA     @next    
+0000C  AC05              RMO     A,T    . save A to T
+0000E  4B2021            JSUB    power    . saves the power value to A, X has the power
+00011  9850              MULR    T,A    . mul T and A
+00013  AC04              RMO     A,S    
+00015  03206C            LDA     result    
+00018  9040              ADDR    S,A    
+0001A  0F2067            STA     result    
+0001D  032067            LDA     next    
+00020  190003            ADD     #3    
+00023  2D0000            TIX     #0    
+00026  0F205E            STA     next    . i hate this assembly language
+00029  292055            COMP    #x    
+0002C  3B2FDA            JLT     loop    
+0002F  3F2FFD    halt    J       halt    
+                  
+                  . saves the power value to A, X has the power
+00032  0F202B    power   STA     copyA    
+00035  13202B            STX     copyX    
+00038  7F202E            STS     copyS    
+0003B  050000            LDX     #0    
+0003E  6F2022            LDS     copyX    
+00041  A014              COMPR   X,S    
+00043  33200E            JEQ     donA    
+00046  010001            LDA     #1    
+00049  232035    ploop   MUL     x    
+0004C  B840              TIXR    S    
+0004E  3B2FF8            JLT     ploop    
+00051  3F2003            J       done    
+00054  010001    donA    LDA     #1    
+00057  072009    done    LDX     copyX    
+0005A  6F200C            LDS     copyS    
+0005D  4F0000            RSUB        
+                  
+00060  000000    copyA   WORD    0    
+00063  000000    copyX   WORD    0    
+00066  000000    copyL   WORD    0    
+00069  000000    copyS   WORD    0    
+0006C  000000    copyT   WORD    0    
+0006F  000000    copyB   WORD    0    
+                  
+00072  000005    koef    WORD    5    
+00075  000004            WORD    4    
+00078  000003            WORD    3    
+0007B  000002            WORD    2    
+0007E  000001            WORD    1    
+                  
+00081  000002    x       WORD    2    
+00084  000000    result  RESW    1    
+00087  000000    next    WORD    0    

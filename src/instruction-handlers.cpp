@@ -84,9 +84,12 @@ void j(machine& m, memory& mem, registers& regs, instruction& instr, int actual_
     if (instr.getFormat() == format::F3F4 && instr.isExtended()) {
         offset = -4;
     }
-    if (instr.op1 == offset)
+    if (instr.op1 == offset) {
         m.halt();
-    regs[PC] = instr.op1;
+        return;
+    }
+    //TODO: shouldn't this be actual_addr?
+    regs[PC] = actual_addr;
 }
 
 void jeq(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
@@ -109,7 +112,7 @@ void jlt(machine& m, memory& mem, registers& regs, instruction& instr, int actua
 
 void jsub(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
     regs[L] = regs[PC];
-    regs[PC] = instr.op1;
+    j(m, mem, regs, instr, actual_addr, actual_param);
 }
 
 void lda(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
@@ -177,7 +180,7 @@ void rmo(machine& m, memory& mem, registers& regs, instruction& instr, int actua
 }
 
 void rsub(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    regs[PC] = regs[L];
+    j(m, mem, regs, instr, regs[L], actual_param);
 }
 
 void shiftl(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
@@ -274,6 +277,7 @@ void tixr(machine& m, memory& mem, registers& regs, instruction& instr, int actu
 void wd(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
     std::fstream& dev = m.getDevice(actual_param);
     dev << (char)(regs[A] & 0xFF);
+    dev.flush();
 }
 
 void ldch(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
@@ -351,9 +355,12 @@ int exec_instruction(machine& m, instruction instr) {
         handler(m, m.getMemory(), m.getRegisters(), instr, 0, 0);
         return 0;
     }
-
+    //expansion from char to int if first bit is 1 then it gets expanded to an unsigned int
+    //that is not what i want so figure something out woth unsigned chars
     int addr = actual_address(m, instr);
     int param = actual_param(m, instr, addr);
-    handler(m, m.getMemory(), m.getRegisters(), instr, addr, param);
+    memory& mem = m.getMemory();
+    registers& regs = m.getRegisters();
+    handler(m, mem, regs, instr, addr, param);
     return 0;
 }

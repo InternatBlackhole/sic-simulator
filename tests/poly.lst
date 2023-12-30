@@ -1,0 +1,31 @@
+00000            poly  START   0    
+                  . V tej nalogi izračunamo vrednost polinoma x⁴+2x³+3x²+4x+5 v točki x=2
+00000  032035          LDA     x    
+00003  232032          MUL     x    
+00006  23202F          MUL     x    
+00009  23202C          MUL     x    
+0000C  9004            ADDR    A,S    
+                  
+0000E  032027          LDA     x    
+00011  232024          MUL     x    
+00014  232021          MUL     x    
+00017  210002          MUL     #2    
+0001A  9004            ADDR    A,S    
+                  
+0001C  032019          LDA     x    
+0001F  232016          MUL     x    
+00022  210003          MUL     #3    
+00025  9004            ADDR    A,S    
+                  
+00027  03200E          LDA     x    
+0002A  210004          MUL     #4    
+                  
+0002D  190005          ADD     #5    
+00030  9004            ADDR    A,S    
+                  
+00032  7F2006          STS     res    
+                  
+00035  3F2FFD    halt  J       halt    
+                  
+00038  000002    x     WORD    2    
+0003B  000000    res   WORD    0    . should be 57

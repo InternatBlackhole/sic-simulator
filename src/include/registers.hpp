@@ -1,6 +1,8 @@
 #ifndef TK_REGISTERS_HPP
 #define TK_REGISTERS_HPP
 
+#include <string>
+
 enum reg {
     A = 0,
     X = 1,
@@ -31,6 +33,8 @@ class registers {
     int SW_set_CC(int comp1, int comp2);
     bool SW_get_LT();
     bool SW_get_EQ();
+
+    std::string toString();
 
    private:
     int regs[10];

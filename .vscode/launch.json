@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/simulator",
-            "args": ["${workspaceFolder}/prog.obj"],
+            "args": ["${workspaceFolder}/tests/echo.obj"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

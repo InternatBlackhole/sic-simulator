@@ -1,0 +1,39 @@
+00000            arith  START   0    
+                  
+                  . sum
+00000  032033           LDA     x    
+00003  1B2033           ADD     y    
+00006  0F2033           STA     sum    
+                  
+                  . diff
+00009  03202A           LDA     x    
+0000C  1F202A           SUB     y    
+0000F  0F202D           STA     diff    
+                  
+                  . prod
+00012  032021           LDA     x    
+00015  232021           MUL     y    
+00018  0F2027           STA     prod    
+                  
+                  . quot
+0001B  032018           LDA     x    
+0001E  272018           DIV     y    
+00021  0F2021           STA     quot    
+                  
+                  . mod
+00024  232012           MUL     y    
+00027  0F201E           STA     mod    
+0002A  032009           LDA     x    
+0002D  1F2018           SUB     mod    
+00030  0F2015           STA     mod    
+                  
+00033  3F2FFD    halt   J       halt    
+                  
+00036  000064    x      WORD    100    
+00039  000016    y      WORD    22    
+                  
+0003C  000000    sum    WORD    0    
+0003F  000000    diff   WORD    0    
+00042  000000    prod   WORD    0    
+00045  000000    quot   WORD    0    
+00048  000000    mod    WORD    0    

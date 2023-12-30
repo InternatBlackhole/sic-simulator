@@ -14,7 +14,7 @@ void memory::setByte(int address, int value) {
 }
 
 int memory::getByte(int address) {
-    return mem[address];
+    return mem[address] & 0xFF;
 }
 
 void memory::setWord(int address, int value) {
@@ -32,5 +32,5 @@ int memory::getMemSize() {
 }
 
 char* memory::getMem() {
-    return mem;
+    return (char*)mem;
 }

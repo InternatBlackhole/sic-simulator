@@ -8,6 +8,15 @@
 #include "memory.hpp"
 #include "registers.hpp"
 
+static const char* names[63] = {
+    "LDA", "LDX", "LDL", "STA", "STX", "STL", "ADD", "SUB", "MUL", "DIV",
+    "COMP", "TIX", "JEQ", "JGT", "JLT", "J", "AND", "OR", "JSUB", "RSUB",
+    "LDCH", "STCH", "ADDF", "SUBF", "MULF", "DIVF", "LDB", "LDS", "LDF", "LDT",
+    "STB", "STS", "STF", "STT", "COMPF", "null", "ADDR", "SUBR", "MULR", "DIVR",
+    "COMPR", "SHIFTL", "SHIFTR", "RMO", "SVC", "CLEAR", "TIXR", "null", "FLOAT", "FIX",
+    "NORM", "null", "LPS", "STI", "RD", "WD", "TD", "null", "STSW", "SSK",
+    "SIO", "HIO", "TIO"};
+
 instruction::instruction(int firstByte) : op1(-1), op2(-1) {
     this->opcode = (firstByte & 0xFC) >> 2;
     flags = (firstByte & 0x3) << 4;
@@ -67,12 +76,12 @@ std::string instruction::toString() {
             str << (isExtended() ? "F4: " : "F3: ");
             break;
     }
-    str << std::hex << opcode
+    str << names[opcode]
         << "|"
-        << std::hex << op1
+        << op1 << "_0x" << std::hex << op1
         << "|";
     if (op2 != -1) {
-        str << std::hex << op2;
+        str << ((uint)op2 & 0xFFFFFF) << "_0x" << std::hex << ((uint)op2 & 0xFFFFFF);
     }
     return str.str();
 }

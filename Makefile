@@ -2,7 +2,7 @@
 # Compiler options
 CC = g++ -DDEBUG -g
 CFLAGS = -c -Wall
-LINKER_LIBS = -lm -lpthread
+LINKER_LIBS = -lm -lpthread -lncurses
 
 # Directories
 SRC_DIR = ./src

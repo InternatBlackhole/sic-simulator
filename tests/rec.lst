@@ -1,0 +1,164 @@
+00000            rec        START   0    
+                  
+                  . calling convention: result is returned in A register, first argument is passed in A register all others are on stack
+00000  4B213A               JSUB    stackinit    
+00003  4B20FD    mloop      JSUB    parse    
+                  . parsed number is in A
+00006  290000               COMP    #0    
+00009  33200C               JEQ     halt    
+0000C  4B200C               JSUB    fakulteta    
+                  . fakulteta je v A
+0000F  4B204D               JSUB    num    
+00012  4B203B               JSUB    nl    
+00015  3F2FEB               J       mloop    
+00018  3F2FFD    halt       J       halt    
+                  
+                  
+                  . int fakulteta(int num)
+0001B  290000    fakulteta  COMP    #0    
+0001E  332023               JEQ     fdone    
+00021  16217A               STL     @stackptr    
+00024  4B2126               JSUB    stackpush    
+00027  0E2174               STA     @stackptr    
+0002A  4B2120               JSUB    stackpush    
+0002D  1D0001               SUB     #1    
+00030  4B2FE8               JSUB    fakulteta    
+00033  4B2129               JSUB    stackpop    
+00036  6E2165               LDS     @stackptr    
+00039  9840                 MULR    S,A    
+0003B  4B2121               JSUB    stackpop    
+0003E  0A215D               LDL     @stackptr    
+00041  4F0000               RSUB        
+00044  010001    fdone      LDA     #1    
+00047  4F0000               RSUB        
+                  
+                  . void char(char ch) # prints ch to stdout
+0004A  DD0001    char       WD      #1    
+0004D  4F0000               RSUB        
+                  
+                  . void nl() # prints new line char
+00050  0F211E    nl         STA     regcopy1    
+00053  01000A               LDA     #10    
+00056  DD0001               WD      #1    
+00059  032115               LDA     regcopy1    
+0005C  4F0000               RSUB        
+                  
+                  . void num(int num) # prints num to stdout
+0005F  0F210F    num        STA     regcopy1    
+00062  132112               STX     regcopy3    
+00065  872112               STT     regcopy4    
+                  . easy fast fix for 0
+00068  290000               COMP    #0    
+0006B  33207D               JEQ     is0    
+0006E  750000               LDT     #0    
+00071  872100               STT     regcopy2    . set it to zero
+00074  432109               AND     minusmask    
+00077  A80F                 SHIFTR  A,16    
+00079  A806                 SHIFTR  A,7    
+0007B  2B2105               COMP    minusone    . shiftr is aritmetic
+0007E  0320F0               LDA     regcopy1    
+00081  33202E               JEQ     eq    
+                  . number is positive
+00084  050000    pos        LDX     #0    
+00087  AC04                 RMO     A,S    . S has number before division
+00089  A045      lop        COMPR   S,T    
+                  . we are done, print it
+0008B  332041               JEQ     ifl    
+0008E  AC40                 RMO     S,A    
+00090  25000A               DIV     #10    
+00093  0F20DE               STA     regcopy2    
+00096  21000A               MUL     #10    
+00099  9404                 SUBR    A,S    
+                  . S has the modulo
+0009B  0F20DF               STA     dref    
+0009E  AC40                 RMO     S,A    
+000A0  190030               ADD     #48    
+000A3  57A0E0               STCH    decWord,X    
+000A6  0320D4               LDA     dref    
+000A9  2D0000               TIX     #0    
+000AC  6F20C5               LDS     regcopy2    
+000AF  3F2FD7               J       lop    
+000B2  0F20C8    eq         STA     dref    
+000B5  51002D               LDCH    #45    
+000B8  1720B9               STL     regcopy2    
+000BB  4B2F8C               JSUB    char    
+000BE  0B20B3               LDL     regcopy2    
+000C1  0320B9               LDA     dref    
+000C4  2320BC               MUL     minusone    
+000C7  3F2FBA               J       pos    
+                  . now print it
+000CA  750001    ifd        LDT     #1    
+000CD  9451                 SUBR    T,X    
+000CF  750000    ifl        LDT     #0    . if loop
+000D2  A015                 COMPR   X,T    
+000D4  3B2020               JLT     don    
+000D7  53A0AC               LDCH    decWord,X    
+000DA  172097               STL     regcopy2    
+000DD  4B2F6A               JSUB    char    
+000E0  0B2091               LDL     regcopy2    
+000E3  750001               LDT     #1    
+000E6  9451                 SUBR    T,X    
+000E8  3F2FE4               J       ifl    
+000EB  010030    is0        LDA     #48    . 0 in ascii
+000EE  172083               STL     regcopy2    
+000F1  4B2F56               JSUB    char    
+000F4  0B207D               LDL     regcopy2    
+000F7  07207D    don        LDX     regcopy3    
+000FA  032074               LDA     regcopy1    
+000FD  77207A               LDT     regcopy4    
+00100  4F0000               RSUB        
+                  
+                  . int parse() # parses number on stdin, can only parse positive numbers, limiter is new line
+00103  87206B    parse      STT     regcopy1    
+00106  13206B               STX     regcopy2    
+00109  750000               LDT     #0    
+0010C  050000               LDX     #0    
+0010F  010000    ploop      LDA     #0    . to reset
+00112  D900FA               RD      #250    
+00115  290000               COMP    #0    
+00118  332017               JEQ     pdone    
+0011B  29000A               COMP    #10    . if equal to new line
+0011E  332011               JEQ     pdone    
+00121  1D0030               SUB     #48    
+                  . now i have the number in A
+00124  AC01                 RMO     A,X    
+00126  AC50                 RMO     T,A    
+00128  21000A               MUL     #10    
+0012B  9010                 ADDR    X,A    
+0012D  AC05                 RMO     A,T    . move A to T
+0012F  3F2FDD               J       ploop    
+00132  AC50      pdone      RMO     T,A    
+00134  77203A               LDT     regcopy1    
+00137  07203A               LDX     regcopy2    
+0013A  4F0000               RSUB        
+                  
+0013D  0F2031    stackinit  STA     regcopy1    
+00140  0110FFFC            +LDA     #65532    
+00144  0F2057               STA     stackptr    
+00147  032027               LDA     regcopy1    
+0014A  4F0000               RSUB        
+                  
+0014D  0F2021    stackpush  STA     regcopy1    
+00150  03204B               LDA     stackptr    
+00153  190003               ADD     #3    
+00156  0F2045               STA     stackptr    
+00159  032015               LDA     regcopy1    
+0015C  4F0000               RSUB        
+                  
+0015F  0F200F    stackpop   STA     regcopy1    
+00162  032039               LDA     stackptr    
+00165  1D0003               SUB     #3    
+00168  0F2033               STA     stackptr    
+0016B  032003               LDA     regcopy1    
+0016E  4F0000               RSUB        
+                  
+00171  000000    regcopy1   WORD    0    
+00174  000000    regcopy2   WORD    0    
+00177  000000    regcopy3   WORD    0    
+0017A  000000    regcopy4   WORD    0    
+0017D  000000    dref       WORD    0    
+00180  800000    minusmask  WORD    8388608    
+00183  FFFFFF    minusone   WORD    -1    
+00186  00....00  decWord    RESW    8    . ceil(log(2^24))
+                  
+0019E  000000    stackptr   WORD    0    

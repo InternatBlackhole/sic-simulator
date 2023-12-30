@@ -1,5 +1,7 @@
 #include "registers.hpp"
 
+#include <sstream>
+
 registers::registers() {
     for (int i = 0; i < 10; i++) {
         regs[i] = 0;
@@ -47,4 +49,18 @@ bool registers::SW_get_LT() {
 
 bool registers::SW_get_EQ() {
     return regs[SW] & 0x010000;
+}
+
+std::string registers::toString() {
+    std::stringstream str;
+    str << "A: " << regs[A] << "\n";
+    str << "X: " << regs[X] << "\n";
+    str << "L: " << regs[L] << "\n";
+    str << "B: " << regs[B] << "\n";
+    str << "S: " << regs[S] << "\n";
+    str << "T: " << regs[T] << "\n";
+    str << "F: " << regs[F] << "\n";
+    str << "PC: " << regs[PC] << "\n";
+    str << "SW: " << regs[SW] << "\n";
+    return str.str();
 }

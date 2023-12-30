@@ -1,0 +1,144 @@
+00000            echo       START   0    
+                  
+                  . main part test the subroutines
+                  . char test
+00000  010020               LDA     #32    
+00003  4B205E    chtst      JSUB    char    
+00006  4B2061               JSUB    nl    
+00009  29007E               COMP    #126    
+0000C  190001               ADD     #1    
+0000F  3B2FF1               JLT     chtst    
+                  
+                  . string test
+00012  012135               LDA     #printniz    
+00015  4B2061               JSUB    string    
+00018  4B204F               JSUB    nl    
+                  
+                  . num test
+0001B  01002A               LDA     #42    
+0001E  4B2085               JSUB    num    
+00021  4B2046               JSUB    nl    
+00024  032168               LDA     minusone    
+00027  4B207C               JSUB    num    
+0002A  4B203D               JSUB    nl    
+0002D  011392E5            +LDA     #234213    
+00031  4B2072               JSUB    num    
+00034  4B2033               JSUB    nl    
+00037  0114EA4C            +LDA     #322124    
+0003B  232151               MUL     minusone    
+0003E  4B2065               JSUB    num    
+00041  4B2026               JSUB    nl    
+00044  011FFFFF            +LDA     #1048575    
+00048  4B205B               JSUB    num    
+0004B  4B201C               JSUB    nl    
+0004E  23213E               MUL     minusone    
+00051  4B2052               JSUB    num    
+00054  4B2013               JSUB    nl    
+00057  01100000            +LDA     #0    
+0005B  4B2048               JSUB    num    
+0005E  4B2009               JSUB    nl    
+                  
+00061  3F2FFD    halt       J       halt    
+                  
+00064  DD0001    char       WD      #1    
+00067  4F0000               RSUB        
+                  
+0006A  0F2110    nl         STA     regcopy1    
+0006D  01000A               LDA     #10    
+00070  DD0001               WD      #1    
+00073  032107               LDA     regcopy1    
+00076  4F0000               RSUB        
+                  
+00079  0F2101    string     STA     regcopy1    
+0007C  0F210A               STA     dref    
+                  . index addressing can't be done with indirect addressing
+0007F  010000    loopp      LDA     #0    . clear A
+00082  522104               LDCH    @dref    
+00085  290000               COMP    #0    
+00088  332015               JEQ     loppd    
+0008B  1720F2               STL     regcopy2    
+0008E  4B2FD3               JSUB    char    
+00091  0B20EC               LDL     regcopy2    
+00094  0320F2               LDA     dref    
+00097  190001               ADD     #1    
+0009A  0F20EC               STA     dref    
+0009D  3F2FDF               J       loopp    
+000A0  0320DA    loppd      LDA     regcopy1    
+000A3  4F0000               RSUB        
+                  
+                  . first check if it a negative number and print minus if necessary and convert it to a positive number
+000A6  0F20D4    num        STA     regcopy1    
+000A9  1320D7               STX     regcopy3    
+000AC  8720D7               STT     regcopy4    
+                  . easy fast fix for 0
+000AF  290000               COMP    #0    
+000B2  33207D               JEQ     is0    
+000B5  750000               LDT     #0    
+000B8  8720C5               STT     regcopy2    . set it to zero
+000BB  4320CE               AND     minusmask    
+000BE  A80F                 SHIFTR  A,16    
+000C0  A806                 SHIFTR  A,7    
+000C2  2B20CA               COMP    minusone    . shiftr is aritmetic
+000C5  0320B5               LDA     regcopy1    
+000C8  33202E               JEQ     eq    
+                  . number is positive
+000CB  050000    pos        LDX     #0    
+000CE  AC04                 RMO     A,S    . S has number before division
+000D0  A045      lop        COMPR   S,T    
+                  . we are done, print it
+000D2  33203C               JEQ     ifd    
+000D5  AC40                 RMO     S,A    
+000D7  25000A               DIV     #10    
+000DA  0F20A3               STA     regcopy2    
+000DD  21000A               MUL     #10    
+000E0  9404                 SUBR    A,S    
+                  . S has the modulo
+000E2  0F20A4               STA     dref    
+000E5  AC40                 RMO     S,A    
+000E7  190030               ADD     #48    
+000EA  57A0A5               STCH    decWord,X    
+000ED  032099               LDA     dref    
+000F0  2D0000               TIX     #0    
+000F3  6F208A               LDS     regcopy2    
+000F6  3F2FD7               J       lop    
+000F9  0F208D    eq         STA     dref    
+000FC  51002D               LDCH    #45    
+000FF  17207E               STL     regcopy2    
+00102  4B2F5F               JSUB    char    
+00105  0B2078               LDL     regcopy2    
+00108  03207E               LDA     dref    
+0010B  232081               MUL     minusone    
+0010E  3F2FBA               J       pos    
+                  . now print it
+00111  750001    ifd        LDT     #1    
+00114  9451                 SUBR    T,X    
+00116  750000    ifl        LDT     #0    
+00119  A015                 COMPR   X,T    
+0011B  3B2020               JLT     don    
+0011E  53A071               LDCH    decWord,X    
+00121  17205C               STL     regcopy2    
+00124  4B2F3D               JSUB    char    
+00127  0B2056               LDL     regcopy2    
+0012A  750001               LDT     #1    
+0012D  9451                 SUBR    T,X    
+0012F  3F2FE4               J       ifl    
+00132  010030    is0        LDA     #48    . 0 in ascii
+00135  172048               STL     regcopy2    
+00138  4B2F29               JSUB    char    
+0013B  0B2042               LDL     regcopy2    
+0013E  072042    don        LDX     regcopy3    
+00141  032039               LDA     regcopy1    
+00144  77203F               LDT     regcopy4    
+00147  4F0000               RSUB        
+                  
+0014A  48....21  printniz   WORD    C'HELLO PRINT ME i am a test of this working.,...!!!!'    
+0017D  000000    regcopy1   WORD    0    
+00180  000000    regcopy2   WORD    0    
+00183  000000    regcopy3   WORD    0    
+00186  000000    regcopy4   WORD    0    
+                  
+00189  000000    dref       WORD    0    
+0018C  800000    minusmask  WORD    8388608    
+0018F  FFFFFF    minusone   WORD    -1    
+                  
+00192  00....00  decWord    RESW    8    . ceil(log(2^24))

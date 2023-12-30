@@ -1,0 +1,125 @@
+00000            stack      START   0    
+                  
+00000  4B20E5               JSUB    stackinit    
+                  
+                  . fakulteta
+00003  01000C               LDA     #12    
+                  . A has value of fakulteta
+00006  4B2009               JSUB    fakulteta    
+00009  4B204A               JSUB    num    
+0000C  4B2038               JSUB    nl    
+0000F  3F2FFD    halt       J       halt    
+                  
+00012  290000    fakulteta  COMP    #0    
+00015  332023               JEQ     fdone    
+00018  16212E               STL     @stackptr    
+0001B  4B20DA               JSUB    stackpush    
+0001E  0E2128               STA     @stackptr    
+00021  4B20D4               JSUB    stackpush    
+00024  1D0001               SUB     #1    
+00027  4B2FE8               JSUB    fakulteta    
+0002A  4B20DD               JSUB    stackpop    
+0002D  6E2119               LDS     @stackptr    
+00030  9840                 MULR    S,A    
+00032  4B20D5               JSUB    stackpop    
+00035  0A2111               LDL     @stackptr    
+00038  4F0000               RSUB        
+0003B  010001    fdone      LDA     #1    
+0003E  4F0000               RSUB        
+                  
+00041  DD0001    char       WD      #1    
+00044  4F0000               RSUB        
+                  
+00047  0F20D2    nl         STA     regcopy1    
+0004A  01000A               LDA     #10    
+0004D  DD0001               WD      #1    
+00050  0320C9               LDA     regcopy1    
+00053  4F0000               RSUB        
+                  
+00056  0F20C3    num        STA     regcopy1    
+00059  1320C6               STX     regcopy3    
+0005C  8720C6               STT     regcopy4    
+0005F  750000               LDT     #0    
+00062  8720BA               STT     regcopy2    . set it to zero
+00065  4320C3               AND     minusmask    
+00068  A80F                 SHIFTR  A,16    
+0006A  A806                 SHIFTR  A,7    
+0006C  2B20BF               COMP    minusone    . shiftr is aritmetic
+0006F  0320AA               LDA     regcopy1    
+00072  33202E               JEQ     eq    
+                  . number is positive
+00075  050000    pos        LDX     #0    
+00078  AC04                 RMO     A,S    . S has number before division
+0007A  A045      lop        COMPR   S,T    
+                  . we are done, print it
+0007C  33203C               JEQ     ifd    
+0007F  AC40                 RMO     S,A    
+00081  25000A               DIV     #10    
+00084  0F2098               STA     regcopy2    
+00087  21000A               MUL     #10    
+0008A  9404                 SUBR    A,S    
+                  . S has the modulo
+0008C  0F2099               STA     dref    
+0008F  AC40                 RMO     S,A    
+00091  190030               ADD     #48    
+00094  57A09A               STCH    decWord,X    
+00097  03208E               LDA     dref    
+0009A  2D0000               TIX     #0    
+0009D  6F207F               LDS     regcopy2    
+000A0  3F2FD7               J       lop    
+000A3  0F2082    eq         STA     dref    
+000A6  51002D               LDCH    #45    
+000A9  172073               STL     regcopy2    
+000AC  4B2F92               JSUB    char    
+000AF  0B206D               LDL     regcopy2    
+000B2  032073               LDA     dref    
+000B5  232076               MUL     minusone    
+000B8  3F2FBA               J       pos    
+                  . now print it
+000BB  750001    ifd        LDT     #1    
+000BE  9451                 SUBR    T,X    
+000C0  750000    ifl        LDT     #0    
+000C3  A015                 COMPR   X,T    
+000C5  3B2014               JLT     don    
+000C8  53A066               LDCH    decWord,X    
+000CB  172051               STL     regcopy2    
+000CE  4B2F70               JSUB    char    
+000D1  0B204B               LDL     regcopy2    
+000D4  750001               LDT     #1    
+000D7  9451                 SUBR    T,X    
+000D9  3F2FE4               J       ifl    
+000DC  072043    don        LDX     regcopy3    
+000DF  03203A               LDA     regcopy1    
+000E2  772040               LDT     regcopy4    
+000E5  4F0000               RSUB        
+                  
+000E8  0F2031    stackinit  STA     regcopy1    
+000EB  0110FFFC            +LDA     #65532    
+000EF  0F2057               STA     stackptr    
+000F2  032027               LDA     regcopy1    
+000F5  4F0000               RSUB        
+                  
+000F8  0F2021    stackpush  STA     regcopy1    
+000FB  03204B               LDA     stackptr    
+000FE  190003               ADD     #3    
+00101  0F2045               STA     stackptr    
+00104  032015               LDA     regcopy1    
+00107  4F0000               RSUB        
+                  
+0010A  0F200F    stackpop   STA     regcopy1    
+0010D  032039               LDA     stackptr    
+00110  1D0003               SUB     #3    
+00113  0F2033               STA     stackptr    
+00116  032003               LDA     regcopy1    
+00119  4F0000               RSUB        
+                  
+0011C  000000    regcopy1   WORD    0    
+0011F  000000    regcopy2   WORD    0    
+00122  000000    regcopy3   WORD    0    
+00125  000000    regcopy4   WORD    0    
+00128  000000    dref       WORD    0    
+0012B  800000    minusmask  WORD    8388608    
+0012E  FFFFFF    minusone   WORD    -1    
+00131  00....00  decWord    RESW    8    . ceil(log(2^24))
+                  
+00149  000000    stackptr   WORD    0    

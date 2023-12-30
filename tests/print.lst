@@ -1,0 +1,14 @@
+00000            print  START   0    
+                  
+00000  050000           LDX     #0    
+00003  53A018    loop   LDCH    niz,X    
+00006  290000           COMP    #0    
+00009  332009           JEQ     lopd    
+0000C  DD00AA           WD      #170    
+0000F  2D0000           TIX     #0    
+00012  3F2FEE           J       loop    
+00015  01000A    lopd   LDA     #10    
+00018  DD00AA           WD      #170    
+0001B  3F2FFD    halt   J       halt    
+                  
+0001E  53....45  niz    WORD    C'SIC/XE'    

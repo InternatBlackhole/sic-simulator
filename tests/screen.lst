@@ -1,0 +1,30 @@
+00000            scrasm    START   0    
+                  
+00000  010041              LDA     #65    
+00003  4B2009              JSUB    scrfill    
+                  
+00006  4B2003              JSUB    scrclear    
+                  
+00009  3F2FFD    halt      J       halt    
+                  
+0000C  010000    scrclear  LDA     #0    
+0000F  072024    scrfill   LDX     screen    
+00012  13201E              STX     scrptr    
+00015  AC05                RMO     A,T    
+00017  03201C              LDA     screen    
+0001A  1907D0              ADD     #scrlen    
+0001D  AC04                RMO     A,S    
+0001F  AC50                RMO     T,A    
+00021  56100033  loop     +STCH    @scrptr    
+00025  2D07D0              TIX     #scrlen    
+00028  132008              STX     scrptr    
+0002B  A014                COMPR   X,S    
+0002D  3B2FF1              JLT     loop    
+00030  4F0000    done      RSUB        
+                  
+00033  000000    scrptr    WORD    0    
+                  
+00036  00B800    screen    WORD    47104    
+00039  000050    scrcols   WORD    80    
+0003C  000019    scrrows   WORD    25    
+0003F            scrlen    EQU     80*25    

@@ -1,0 +1,43 @@
+00000            arithr  START   0    
+00000  6F202D            LDS     x    
+00003  77202D            LDT     y    
+                  
+                  . sum
+00006  9045              ADDR    S,T    
+00008  87202B            STT     sum    
+0000B  9445              SUBR    S,T    
+                  
+                  . diff
+0000D  9454              SUBR    T,S    
+0000F  7F2027            STS     diff    
+00012  9054              ADDR    T,S    
+                  
+                  . prod
+00014  9845              MULR    S,T    
+00016  872023            STT     prod    
+00019  9C45              DIVR    S,T    
+                  
+                  . quot
+0001B  7F2024            STS     mod    
+0001E  9C54              DIVR    T,S    
+00020  7F201C            STS     quot    
+                  
+                  . mod
+00023  9854              MULR    T,S    
+00025  6B201A            LDB     mod    
+00028  9443              SUBR    S,B    
+0002A  7B2015            STB     mod    
+                  
+                  
+0002D  3F2FFD    halt    J       halt    
+                  
+                  
+                  
+00030  000064    x       WORD    100    
+00033  000016    y       WORD    22    
+                  
+00036  000000    sum     WORD    0    
+00039  000000    diff    WORD    0    
+0003C  000000    prod    WORD    0    
+0003F  000000    quot    WORD    0    
+00042  000000    mod     WORD    0    
