@@ -1,10 +1,10 @@
 #ifndef TK_MACHINE_HPP
 #define TK_MACHINE_HPP
+#include <condition_variable>
 #include <cstdio>
 #include <fstream>
-#include <thread>
-#include <condition_variable>
 #include <mutex>
+#include <thread>
 
 #include "instructions.hpp"
 #include "loader.hpp"
@@ -36,7 +36,7 @@ class machine {
     registers& getRegisters();
     bool ioAvailable();
     void setIOAvailable(bool ioAvailable);
-    std::fstream& getDevice(int dev);
+    FILE* getDevice(int dev);
     void setFrequency(int freq);
     int getFrequency();
 
@@ -45,7 +45,7 @@ class machine {
     registers regs;
     machine_status status;
     bool _ioAvailable;
-    std::fstream* devices[256] = {0};
+    std::FILE* devices[256] = {0};
     int freq;
 
     instruction* fetch();

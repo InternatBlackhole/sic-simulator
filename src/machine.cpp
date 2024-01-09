@@ -10,9 +10,9 @@
 
 machine::machine(memory& mem, program_info& prog) : mem(mem), _ioAvailable(true), freq(100) {
     regs[PC] = prog.entryPoint;  // TODO: possible failure point
-    devices[0] = new std::fstream("/proc/self/fd/0", std::ios::in);
-    devices[1] = new std::fstream("/proc/self/fd/1", std::ios::out);
-    devices[2] = new std::fstream("/proc/self/fd/2", std::ios::out);
+    devices[0] = std::fopen("/proc/self/fd/0", "r");
+    devices[1] = std::fopen("/proc/self/fd/1", "w");
+    devices[2] = std::fopen("/proc/self/fd/2", "w");
     status = machine_status::ready;
 }
 
@@ -23,8 +23,8 @@ machine::~machine() {
 
     for (unsigned long i = 0; i < (sizeof(devices) / sizeof(devices[0])); i++) {
         if (devices[i] != nullptr) {
-            devices[i]->close();
-            delete devices[i];
+            std::fflush(devices[i]);
+            std::fclose(devices[i]);
         }
     }
 }
@@ -39,8 +39,8 @@ registers& machine::getRegisters() {
 
 instruction* machine::fetch() {
     int newByte = mem.getByte(regs[PC]++);
-    uint op1 = 0, op2 = 0;
     instruction* instr = new instruction(newByte);
+    uint op1 = 0, op2 = 0;
     switch (instr->getFormat()) {
         case format::F1:
             // done
@@ -48,40 +48,38 @@ instruction* machine::fetch() {
         case format::F2:
             newByte = mem.getByte(regs[PC]++);
             // these two should never be negative
-            instr->op1 = (newByte & 0xF0) >> 4;
-            instr->op2 = newByte & 0xF;
+            op1 = (newByte & 0xF0) >> 4;
+            op2 = newByte & 0xF;
             break;
         case format::SIC:
             newByte = mem.getByte(regs[PC]++);
             instr->flags |= (newByte & 0x80) >> 4;
             // shift these 4 bits all the way up so that they will be correctly expanded
-            instr->op1 = (newByte & 0x7F) << 28;
-            // 17 for sic so that it is on 15 bit
-            instr->op1 >>= 17;
+            op1 = (newByte & 0x7F) << 8;
             newByte = mem.getByte(regs[PC]++);
-            instr->op1 |= newByte;
+            op1 |= newByte;
+            op1 = op1 & 0x4000 ? op1 | 0xffff8000 : op1;
             break;
         case format::F3F4:
             newByte = mem.getByte(regs[PC]++);
             instr->flags |= (newByte & 0xF0) >> 4;
-            if (instr->isExtended() && newByte & 0x8) {
-                // extended negative number
-                instr->op1 = (newByte & 0xF) << 8;
-            } else {
-                instr->op1 = (newByte & 0xF) << 28;
-                instr->op1 >>= 20;
-                instr->op1 = (newByte & 0xF) << 8;
-            }
+            op1 = (newByte & 0xF) << 8;
             newByte = mem.getByte(regs[PC]++);
-            instr->op1 |= newByte;
+            op1 |= newByte;
             if (instr->isExtended()) {
                 newByte = mem.getByte(regs[PC]++);
-                instr->op1 = (instr->op1 << 8) | newByte;
+                op1 = (op1 << 8) | newByte;
+                op1 = op1 & 0x800000 ? op1 | 0xff000000 : op1;
+            } else {
+                op1 = op1 & 0x800 ? op1 | 0xfffff000 : op1;
             }
             break;
         default:
             throw std::runtime_error("Invalid instruction format");
     }
+
+    instr->op1 = op1;
+    instr->op2 = op2;
     return instr;
 }
 
@@ -179,14 +177,14 @@ void machine::setIOAvailable(bool ioAvailable) {
     this->_ioAvailable = ioAvailable;
 }
 
-std::fstream& machine::getDevice(int dev) {
-    std::fstream* device = devices[dev];
+FILE* machine::getDevice(int dev) {
+    FILE* device = devices[dev];
     if (device == nullptr) {
         // lazy init device
         std::stringstream ss;
         ss << std::hex << dev << ".dev";
-        device = new std::fstream(std::string(ss.str()), std::ios::out | std::ios::in);
+        device = std::fopen(ss.str().c_str(), "w+");
         devices[dev] = device;
     }
-    return *device;
+    return device;
 }

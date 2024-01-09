@@ -2,6 +2,16 @@
 
 #include <sstream>
 
+// turns the value into a 3byte signed integer in 4 byte format
+int canonize(int value) {
+    if (value > 0x7FFFFF) {
+        //number is negative
+        //put ones into the upper 8 bits
+        value |= 0xFF000000;
+    }
+    return value;
+}
+
 registers::registers() {
     for (int i = 0; i < 10; i++) {
         regs[i] = 0;

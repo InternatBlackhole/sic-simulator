@@ -13,7 +13,7 @@ class memory {
     char* getMem();
 
    private:
-    char* mem;
+    unsigned char* mem;
     int memSize;
 };
 

@@ -26,7 +26,7 @@ void addr(machine& m, memory& mem, registers& regs, instruction& instr, int actu
 
 // done
 void and_(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    regs[A] &= actual_param;
+    regs[A] = (regs[A] & actual_param) /*& 0xffffff*/;
 }
 
 // done
@@ -88,7 +88,7 @@ void j(machine& m, memory& mem, registers& regs, instruction& instr, int actual_
         m.halt();
         return;
     }
-    //TODO: shouldn't this be actual_addr?
+    // TODO: shouldn't this be actual_addr?
     regs[PC] = actual_addr;
 }
 
@@ -165,13 +165,13 @@ void norm(machine& m, memory& mem, registers& regs, instruction& instr, int actu
 }
 
 void or_(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    regs[A] |= actual_param;
+    regs[A] = (regs[A] | actual_param) /*& 0xffffff*/;
 }
 
 void rd(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    std::fstream& dev = m.getDevice(actual_param);
+    FILE* dev = m.getDevice(actual_param);
     char c = 0;
-    dev >> c;
+    std::fread(&c, 1, 1, dev);
     regs[A] = c & 0xFF;
 }
 
@@ -184,11 +184,14 @@ void rsub(machine& m, memory& mem, registers& regs, instruction& instr, int actu
 }
 
 void shiftl(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    regs[instr.op1] <<= instr.op2;
+    int by = instr.op2 + 1;  // for some reason instruction is off by 1
+    regs[instr.op1] <<= by;
 }
 
 void shiftr(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    regs[instr.op1] >>= instr.op2;
+    // arethemtic fucker
+    int by = instr.op2 + 1;  // for some reason instruction is off by 1
+    regs[instr.op1] >>= by;
 }
 
 void sio(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
@@ -275,13 +278,18 @@ void tixr(machine& m, memory& mem, registers& regs, instruction& instr, int actu
 }
 
 void wd(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    std::fstream& dev = m.getDevice(actual_param);
-    dev << (char)(regs[A] & 0xFF);
-    dev.flush();
+    FILE* dev = m.getDevice(actual_param);
+    char num = regs[A] & 0xFF;
+    std::fwrite(&num, 1, 1, dev);
+    std::fflush(dev);
 }
 
 void ldch(machine& m, memory& mem, registers& regs, instruction& instr, int actual_addr, int actual_param) {
-    regs[A] = actual_param & 0xFF;
+    // use actual_param top byte since it always is a 3 byte word
+    if (instr.getNI() == NI_state::immediate)
+        regs[A] = actual_param;
+    else
+        regs[A] = mem.getByte(actual_addr);
 }
 
 // leave these two here or define all function declarations on top
@@ -350,17 +358,18 @@ int exec_instruction(machine& m, instruction instr) {
         throw std::runtime_error("Instruction does not exist");
     }
 
-    if (instr.getFormat() == format::F2 || instr.getFormat() == format::F1) {
-        // optimization for F1 and F2 instructions
-        handler(m, m.getMemory(), m.getRegisters(), instr, 0, 0);
-        return 0;
-    }
-    //expansion from char to int if first bit is 1 then it gets expanded to an unsigned int
-    //that is not what i want so figure something out woth unsigned chars
-    int addr = actual_address(m, instr);
-    int param = actual_param(m, instr, addr);
     memory& mem = m.getMemory();
     registers& regs = m.getRegisters();
+
+    if (instr.getFormat() == format::F2 || instr.getFormat() == format::F1) {
+        // optimization for F1 and F2 instructions
+        handler(m, mem, regs, instr, 0, 0);
+        return 0;
+    }
+    // expansion from char to int if first bit is 1 then it gets expanded to an unsigned int
+    // that is not what i want so figure something out woth unsigned chars
+    int addr = actual_address(m, instr);
+    int param = actual_param(m, instr, addr);
     handler(m, mem, regs, instr, addr, param);
     return 0;
 }

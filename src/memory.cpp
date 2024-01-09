@@ -1,7 +1,7 @@
 #include "memory.hpp"
 
 memory::memory(int size) {
-    mem = new char[size];
+    mem = new unsigned char[size];
     memSize = size;
 }
 
@@ -24,7 +24,9 @@ void memory::setWord(int address, int value) {
 }
 
 int memory::getWord(int address) {
-    return (mem[address] << 16) | (mem[address + 1] << 8) | mem[address + 2];
+    int tmp = (mem[address] << 16) | (mem[address + 1] << 8) | mem[address + 2];
+    tmp = tmp & 0x00800000 ? tmp | 0xFF000000 : tmp;
+    return tmp;
 }
 
 int memory::getMemSize() {

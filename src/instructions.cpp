@@ -18,7 +18,7 @@ static const char* names[63] = {
     "SIO", "HIO", "TIO"};
 
 instruction::instruction(int firstByte) : op1(-1), op2(-1) {
-    this->opcode = (firstByte & 0xFC) >> 2;
+    this->opcode = ((firstByte & 0xFC) >> 2);
     flags = (firstByte & 0x3) << 4;
 }
 
