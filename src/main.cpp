@@ -132,9 +132,9 @@ int main(int argc, char* argv[]) {
             scanned = scanf("%d", &freq);
             try {
                 mach->setFrequency(freq);
-                std::cout << "Frequency set to: " << freq << RESET;
+                std::cout << "Frequency set to: " << freq << RESET << '\n';
             } catch (std::runtime_error& e) {
-                std::cout << RED << e.what() << "\n" RESET;
+                std::cout << RED << e.what() << "\n" RESET << '\n';
             }
 
         } else if (strcmp("d", buffer) == 0) {

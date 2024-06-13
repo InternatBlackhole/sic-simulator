@@ -1,6 +1,9 @@
 #include "machine.hpp"
 
+#include <unistd.h>
+
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -97,9 +100,7 @@ bool machine::precheck() {
 
 inline void machine::_step(bool print) {
     instruction* instr = fetch();
-#ifdef DEBUG
     if (print)
-#endif
         std::cout << "Fetched instruction: " << instr->toString() << std::endl;
     exec_instruction(*this, *instr);
     delete instr;
@@ -129,9 +130,16 @@ void machine::run() {
     precheck();
 
     status = machine_status::running;
-    std::cout << "Machine running" << std::endl;
-    while (status == machine_status::running) {
-        _step(false);
+    std::cout << "Machine running with frequency " << this->freq << "Hz" << std::endl;
+    if (freq == 0) {
+        while (status == machine_status::running) {
+            _step(false);
+        }
+    } else {
+        while (status == machine_status::running) {
+            _step(true);
+            usleep(1000000 / freq);
+        }
     }
 
     _status_report();
@@ -147,7 +155,7 @@ void machine::step() {
 }
 
 void machine::setFrequency(int freq) {
-    if (freq <= 0) {
+    if (freq < 0) {
         throw std::runtime_error("Frequency must be bigger than 0");
     }
     this->freq = freq;
